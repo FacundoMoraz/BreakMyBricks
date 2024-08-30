@@ -1,7 +1,6 @@
-import { Scene } from 'phaser';
+import Phaser from "phaser";
 
-export class GameOver extends Scene
-{
+export default class GameOver extends Phaser.Scene {
     constructor ()
     {
         super('GameOver');

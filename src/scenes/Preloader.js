@@ -1,7 +1,6 @@
-import { Scene } from 'phaser';
 
-export class Preloader extends Scene
-{
+
+export default class Preloader extends Phaser.Scene {
     constructor ()
     {
         super('Preloader');

@@ -1,27 +1,18 @@
 import Phaser from "phaser";
 
 export default class GameOver extends Phaser.Scene {
-    constructor ()
-    {
-        super('GameOver');
-    }
+  constructor() {
+    super("GameOver");
+  }
 
-    create ()
-    {
-        this.cameras.main.setBackgroundColor(0xff0000);
+  create(data) {
+    this.add.text(400, 200, 'Game Over', { fontSize: '64px', fill: '#fff' }).setOrigin(0.5);
+    this.add.text(400, 300, `Puntos: ${data.puntuacion}`, { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+    this.add.text(400, 400, 'Click to Restart', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
 
-        this.add.image(512, 384, 'background').setAlpha(0.5);
-
-        this.add.text(512, 384, 'Game Over', {
-            fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('MainMenu');
-
-        });
-    }
+    this.input.once('pointerdown', () => {
+      // Reiniciar la escena del juego con puntuación 0
+      this.scene.start('Game', { puntuacion: 0, velocidadInicial: 150 }); // Reiniciar con puntuación 0
+    });
+  }
 }

@@ -4,106 +4,119 @@ export default class Game extends Phaser.Scene {
   constructor() {
     super("Game");
     this.velocidadInicial = 150; // Velocidad inicial
+    this.puntuacion = 0; // Contador de puntos
   }
 
-  preload() {
-    this.load.image("Fondo", "./public/Fondo.png");
-    this.load.image("pala", "./public/PtoYotube.png");
-    this.load.image("Marcos", "./public/Marcos.png");
-    this.load.image("obstaculo", "./public/Rectanguloso.png");
-    this.load.image("Rojo", "./public/red.png");
+  init(data) {
+    if (data && data.puntuacion !== undefined) {
+      this.puntuacion = data.puntuacion; // Mantener la puntuación pasada desde la escena
+    }
+    if (data && data.velocidadInicial !== undefined) {
+      this.velocidadInicial = data.velocidadInicial; // Mantener la velocidad pasada desde la escena
+    }
   }
 
   create() {
-    // Fondo
     this.Fondo = this.add.image(400, 180, "Fondo");
 
-    // Tabla
     this.pala = this.physics.add.image(400, 550, "pala").setImmovable().setScale(0.3);
     this.pala.body.allowGravity = false;
 
-    // La BOLA
-    this.pelota = this.physics.add.image(400, 280, "Marcos");
-    this.pelota.setCollideWorldBounds(true);
-    this.pelota.setBounce(1, 1);
-    this.pelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
+    this.pelotas = this.physics.add.group({
+      key: "Marcos",
+      repeat: 0,
+      setXY: { x: 400, y: 280 }
+    });
 
-    // NUEVO: Crear una matriz de ladrillos rompibles (NxM) manualmente
+    this.pelotas.children.iterate((pelota) => {
+      pelota.setCollideWorldBounds(true);
+      pelota.setBounce(1, 1);
+      pelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
+    });
+
+    this.suelo = this.physics.add.staticGroup();
+    this.suelo.create(300, 610, 'suelo').setScale(2).refreshBody(); // Ajusta la posición y escala según sea necesario
+
     this.ladrillos = this.physics.add.staticGroup();
     this.crearLadrillos();
 
-    // Colisiones
-    this.physics.add.collider(this.pelota, this.pala);
-    this.physics.add.collider(this.pelota, this.ladrillos, this.destruirLadrillo, null, this);
+    this.physics.add.collider(this.pelotas, this.pala, this.rebotarPelota, null, this);
+    this.physics.add.collider(this.pelotas, this.ladrillos, this.destruirLadrillo, null, this);
+    this.physics.add.collider(this.pelotas, this.suelo, this.destruirPelota, null, this); // Añadir la colisión con el suelo
 
-    // NUEVO: Inicializar la puntuación
-    this.puntuacion = 0;
-    this.puntuacionTexto = this.add.text(16, 16, "Puntos: 0", { fontSize: "32px", fill: "#fff" });
+    this.puntuacionTexto = this.add.text(16, 16, "Puntos: " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
 
-    // Mover la palo con el mouse
     this.input.on("pointermove", (pointer) => {
       this.pala.x = pointer.x;
       this.pala.x = Phaser.Math.Clamp(this.pala.x, 52, 748);
     });
+
+    this.bombas = this.physics.add.group();
+    this.physics.add.overlap(this.pala, this.bombas, this.colisionPalaBomba, null, this);
   }
 
   crearLadrillos() {
-    //Fila 1
-    this.ladrillos.create(80, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(160, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(240, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(320, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(400, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(480, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(560, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(640, 180, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(720, 180, "obstaculo").setScale(1).refreshBody();
-
-    // Fila 2
-    this.ladrillos.create(80, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(160, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(240, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(320, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(400, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(480, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(560, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(640, 230, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(720, 230, "obstaculo").setScale(1).refreshBody();
-
-    //Fila 3
-    this.ladrillos.create(80, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(160, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(240, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(320, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(400, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(480, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(560, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(640, 280, "obstaculo").setScale(1).refreshBody();
-    this.ladrillos.create(720, 280, "obstaculo").setScale(1).refreshBody();
-
+    this.filas = 4;
+    this.columnas = 8;
+    this.ladrillo = null;
+    for (this.y = 0; this.y < this.filas; this.y++) {
+      for (this.x = 0; this.x < this.columnas; this.x++) {
+        this.ladrillo = this.ladrillos.create(80 + this.x * 80, 100 + this.y * 40, "obstaculo").setScale(1).refreshBody();
+        this.ladrillo.vida = Phaser.Math.Between(1, 3); // Cantidad de golpes
+        this.ladrillo.creaPelota = Phaser.Math.Between(0, 1) === 1; // Marca para crear pelotas
+        this.ladrillo.creaBomba = Phaser.Math.Between(0, 1) === 1; // Marca para crear bombas
+      }
+    }
   }
 
   destruirLadrillo(pelota, ladrillo) {
-    ladrillo.disableBody(true, true);
-    this.puntuacion += 10;
-    this.puntuacionTexto.setText("Puntos: " + this.puntuacion);
+    ladrillo.vida--;
 
-    // Verificar si todos los ladrillos estan rotos
-    if (this.ladrillos.countActive() === 0) {
-      this.velocidadInicial *= 1.1; // Aumentar la velocidad para la siguiente ronda
-      this.scene.restart({ puntuacion: this.puntuacion, velocidadInicial: this.velocidadInicial });
+    if (ladrillo.vida <= 0) {
+      ladrillo.disableBody(true, true);
+      this.puntuacion += 10;
+      this.puntuacionTexto.setText("Puntos: " + this.puntuacion);
+
+      if (ladrillo.creaPelota) {
+        this.crearPelota(ladrillo.x, ladrillo.y);
+      }
+
+      if (ladrillo.creaBomba) {
+        this.crearBomba(ladrillo.x, ladrillo.y);
+      }
+
+      if (this.ladrillos.countActive() === 0) {
+        this.velocidadInicial *= 1.1;
+        this.scene.restart({ puntuacion: this.puntuacion, velocidadInicial: this.velocidadInicial });
+      }
     }
   }
 
-  init(data) {
-    if (data.puntuacion !== undefined) {
-      this.puntuacion = data.puntuacion;
-    }
-    if (data.velocidadInicial !== undefined) {
-      this.velocidadInicial = data.velocidadInicial;
-    }
+  crearPelota(x, y) {
+    var nuevaPelota = this.pelotas.create(x, y, "Marcos");
+    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
+    nuevaPelota.setBounce(1, 1);
+    nuevaPelota.setCollideWorldBounds(true);
+  }
+
+  crearBomba(x, y) {
+    var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);
+    nuevaBomba.setVelocity(0, 200);
+  }
+
+  destruirPelota(pelota, suelo) {
+    pelota.destroy();
+  }
+
+  colisionPalaBomba(pala, bomba) {
+    // Cambiar a la escena de Game Over y pasar la puntuación actual
+    this.scene.start("GameOver", { puntuacion: this.puntuacion });
   }
 
   update() {
+    // Verificar si no hay pelotas activas
+    if (this.pelotas.countActive() === 0) {
+      this.scene.start("GameOver", { puntuacion: this.puntuacion });
+    }
   }
 }

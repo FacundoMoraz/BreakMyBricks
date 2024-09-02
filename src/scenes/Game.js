@@ -3,16 +3,16 @@ import Phaser from "phaser";
 export default class Game extends Phaser.Scene {
   constructor() {
     super("Game");
-    this.velocidadInicial = 150; // Velocidad inicial
-    this.puntuacion = 0; // Contador de puntos
+    this.velocidadInicial = 150; 
+    this.puntuacion = 0; // Datos iniciales (velocidad y puntos)
   }
 
   init(data) {
     if (data && data.puntuacion !== undefined) {
-      this.puntuacion = data.puntuacion; // Mantener la puntuación pasada desde la escena
+      this.puntuacion = data.puntuacion; 
     }
     if (data && data.velocidadInicial !== undefined) {
-      this.velocidadInicial = data.velocidadInicial; // Mantener la velocidad pasada desde la escena
+      this.velocidadInicial = data.velocidadInicial; 
     }
   }
 
@@ -62,9 +62,9 @@ export default class Game extends Phaser.Scene {
     for (this.y = 0; this.y < this.filas; this.y++) {
       for (this.x = 0; this.x < this.columnas; this.x++) {
         this.ladrillo = this.ladrillos.create(80 + this.x * 80, 100 + this.y * 40, "obstaculo").setScale(1).refreshBody();
-        this.ladrillo.vida = Phaser.Math.Between(1, 3); // Cantidad de golpes
-        this.ladrillo.creaPelota = Phaser.Math.Between(0, 1) === 1; // Marca para crear pelotas
-        this.ladrillo.creaBomba = Phaser.Math.Between(0, 1) === 1; // Marca para crear bombas
+        this.ladrillo.vida = Phaser.Math.Between(1, 3); 
+        this.ladrillo.creaPelota = Phaser.Math.Between(0, 1) === 1; 
+        this.ladrillo.creaBomba = Phaser.Math.Between(0, 1) === 1; // como los anteriores aleatoriza si sale bomba o otra pelota al destruir un ladrillo
       }
     }
   }
@@ -94,14 +94,14 @@ export default class Game extends Phaser.Scene {
 
   crearPelota(x, y) {
     var nuevaPelota = this.pelotas.create(x, y, "Marcos");
-    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
+    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);//carga la velocidad predeterminada
     nuevaPelota.setBounce(1, 1);
     nuevaPelota.setCollideWorldBounds(true);
   }
 
   crearBomba(x, y) {
     var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);
-    nuevaBomba.setVelocity(0, 200);
+    nuevaBomba.setVelocity(0, 200); //velocidad de la bomba
   }
 
   destruirPelota(pelota, suelo) {
@@ -109,12 +109,12 @@ export default class Game extends Phaser.Scene {
   }
 
   colisionPalaBomba(pala, bomba) {
-    // Cambiar a la escena de Game Over y pasar la puntuación actual
+    // Cambiar a la escena de Game Over y mantiene la puntuación final
     this.scene.start("GameOver", { puntuacion: this.puntuacion });
   }
 
   update() {
-    // Verificar si no hay pelotas activas
+    // Verifica si no hay pelotas en la pantalla
     if (this.pelotas.countActive() === 0) {
       this.scene.start("GameOver", { puntuacion: this.puntuacion });
     }

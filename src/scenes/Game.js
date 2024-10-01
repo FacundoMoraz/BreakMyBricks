@@ -93,12 +93,21 @@ export default class Game extends Phaser.Scene {
   }
 
   crearPelota(x, y) {
+
+    const emitter = this.add.particles(0, 0, "Rojo", {
+      speed: 100,
+      scale: { start: 1, end: 0 },
+      blendMode: "ADD",
+    });
+  
+
     var nuevaPelota = this.pelotas.create(x, y, "Marcos");
     nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);//carga la velocidad predeterminada
     nuevaPelota.setBounce(1, 1);
     nuevaPelota.setCollideWorldBounds(true);
-  }
 
+    emitter.startFollow(nuevaPelota);
+  }
   crearBomba(x, y) {
     var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);
     nuevaBomba.setVelocity(0, 200); //velocidad de la bomba

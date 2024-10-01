@@ -6,14 +6,14 @@ export default class Preloader extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("Fondo", "./public/Fondo.png");
-    this.load.image("pala", "./public/PtoYotube.png");
-    this.load.image("Marcos", "./public/Marcos.png");
-    this.load.image("obstaculo", "./public/Rectanguloso.png");
-    this.load.image("Bombi", "./public/Bomba.png");
-    this.load.image("suelo", "./public/suelo.png");
+    this.load.image("Fondo", "Fondo.png");
+    this.load.image("pala", "PtoYotube.png");
+    this.load.image("Marcos", "Marcos.png");
+    this.load.image("obstaculo", "Rectanguloso.png");
+    this.load.image("Bombi", "Bomba.png");
+    this.load.image("suelo", "suelo.png");
 
-    this.load.image("Rojo", "./public/red.png");
+    this.load.image("Rojo", "red.png");
 
   }
 

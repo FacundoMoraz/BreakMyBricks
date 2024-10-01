@@ -106,7 +106,7 @@ export default class Game extends Phaser.Scene {
     nuevaPelota.setBounce(1, 1);
     nuevaPelota.setCollideWorldBounds(true);
 
-    emitter.startFollow(Marcos);
+    emitter.startFollow(nuevaPelota);
   }
   crearBomba(x, y) {
     var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);

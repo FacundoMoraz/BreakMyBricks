@@ -13,7 +13,7 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("Bombi", "Bomba.png");
     this.load.image("suelo", "suelo.png");
 
-    this.load.image("Rojo", "red.png");
+    this.load.image("Rojo", "particles/red.png");
 
   }
 

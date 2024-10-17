@@ -44,7 +44,8 @@ export default class Game extends Phaser.Scene {
     this.physics.add.collider(this.pelotas, this.ladrillos, this.destruirLadrillo, null, this);
     this.physics.add.collider(this.pelotas, this.suelo, this.destruirPelota, null, this); // Añadir la colisión con el suelo
 
-    this.puntuacionTexto = this.add.text(16, 16, "Puntos: " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
+    this.puntuacionTexto = this.add.text(16, 16, getPhrase('Puntos') + ": " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
+
 
     this.input.on("pointermove", (pointer) => {
       this.pala.x = pointer.x;

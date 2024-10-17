@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import { getTranslations, getPhrase } from "../services/translations"; // Importar las funciones
 
 export default class MenuL extends Phaser.Scene {
   constructor() {
@@ -6,28 +6,21 @@ export default class MenuL extends Phaser.Scene {
   }
 
   create() {
-   this.Fondo = this.add.image(400, 300, "Fondo_Lenguaje");
-   this.Fondo.setDisplaySize(800, 600);
+    this.add.image(400, 300, "Fondo_Lenguaje");
 
-    const banderaARG = this.add.image(300, 300, "Bandera_ARG").setInteractive().setScale(0.2);
-    
-    const banderaEEUU = this.add.image(500, 300, "Bandera_EEUU").setInteractive().setScale(0.19);
+    const banderaARG = this.add.image(300, 300, "Bandera_ARG").setInteractive();
+    const banderaEEUU = this.add.image(500, 300, "Bandera_EEUU").setInteractive();
 
     banderaARG.on("pointerdown", () => {
-      this.seleccionarIdioma("es"); // Idioma español
+      getTranslations("ES_AR", () => {
+        this.scene.start("MainMenu"); // Después de cargar las traducciones, ir al MainMenu
+      });
     });
 
     banderaEEUU.on("pointerdown", () => {
-      this.seleccionarIdioma("en"); // Idioma inglés
+      getTranslations("EN_US", () => {
+        this.scene.start("MainMenu");
+      });
     });
-  }
-
-  // Función que maneja la selección del idioma y cambia a la escena MainMenu
-  seleccionarIdioma(idioma) {
-    // Puedes guardar el idioma seleccionado en una variable global o en algún sistema de almacenamiento
-    console.log(`Idioma seleccionado: ${idioma}`);
-    
-    // Cambiar a la escena de menú principal
-    this.scene.start("MainMenu");
   }
 }

@@ -13,11 +13,15 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("Bombi", "Bomba.png");
     this.load.image("suelo", "suelo.png");
 
+    this.load.image("Fondo_Lenguaje", "Fondo_Lenguajes.png");
+    this.load.image("Bandera_ARG", "Bandera_ARG.png");
+    this.load.image("Bandera_EEUU", "Bandera_EEUU.png");
+
     this.load.image("Rojo", "particles/red.png");
 
   }
 
   create() {
-    this.scene.start("MainMenu");
+    this.scene.start("MenuL");
   }
 }

@@ -4,6 +4,7 @@ import Preloader from "./scenes/Preloader.js";
 import MainMenu from "./scenes/MainMenu.js";
 import Game from "./scenes/Game.js";
 import GameOver from "./scenes/GameOver.js";
+import MenuL from "./scenes/Menu_de_lenguaje.js"
 
 const config = {
   type: Phaser.AUTO,
@@ -16,7 +17,7 @@ const config = {
       debug: true,
     },
   },
-  scene: [Boot, Preloader, MainMenu, Game, GameOver],
+  scene: [Boot, Preloader, MenuL, MainMenu, Game, GameOver],
 };
 
 const game = new Phaser.Game(config);

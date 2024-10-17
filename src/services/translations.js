@@ -1,4 +1,5 @@
 import { DE_DE, EN_US, ES_AR, PT_BR } from '../enums/languages';
+
 const PROJECT_ID = 'cm22i5ee40001fah01iuyeqdp';
 let translations = null;
 let language = ES_AR;

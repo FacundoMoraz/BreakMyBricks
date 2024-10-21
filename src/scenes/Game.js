@@ -1,10 +1,11 @@
 import Phaser from "phaser";
+import { getPhrase } from "../services/translations"; // Asegúrate de importar la función
 
 export default class Game extends Phaser.Scene {
   constructor() {
     super("Game");
-    this.velocidadInicial = 150; 
-    this.puntuacion = 0; // Datos iniciales (velocidad y puntos)
+    this.velocidadInicial = 150;
+    this.puntuacion = 0;
   }
 
   init(data) {
@@ -14,6 +15,7 @@ export default class Game extends Phaser.Scene {
     if (data && data.velocidadInicial !== undefined) {
       this.velocidadInicial = data.velocidadInicial; 
     }
+    this.language = data.language || "ES_AR"; // Asignar el idioma seleccionado
   }
 
   create() {
@@ -44,9 +46,6 @@ export default class Game extends Phaser.Scene {
     this.physics.add.collider(this.pelotas, this.ladrillos, this.destruirLadrillo, null, this);
     this.physics.add.collider(this.pelotas, this.suelo, this.destruirPelota, null, this); // Añadir la colisión con el suelo
 
-    this.puntuacionTexto = this.add.text(16, 16, getPhrase('Puntos') + ": " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
-
-
     this.input.on("pointermove", (pointer) => {
       this.pala.x = pointer.x;
       this.pala.x = Phaser.Math.Clamp(this.pala.x, 52, 748);
@@ -54,6 +53,9 @@ export default class Game extends Phaser.Scene {
 
     this.bombas = this.physics.add.group();
     this.physics.add.overlap(this.pala, this.bombas, this.colisionPalaBomba, null, this);
+
+    // Crear el texto de puntuación
+    this.puntuacionTexto = this.add.text(16, 16, getPhrase('Puntos', this.language) + ": " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
   }
 
   crearLadrillos() {
@@ -76,42 +78,36 @@ export default class Game extends Phaser.Scene {
     if (ladrillo.vida <= 0) {
       ladrillo.disableBody(true, true);
       this.puntuacion += 10;
-      this.puntuacionTexto.setText("Puntos: " + this.puntuacion);
 
-      if (ladrillo.creaPelota) {
-        this.crearPelota(ladrillo.x, ladrillo.y);
-      }
-
-      if (ladrillo.creaBomba) {
-        this.crearBomba(ladrillo.x, ladrillo.y);
-      }
+      // Actualiza el texto de puntuación
+      this.puntuacionTexto.setText(getPhrase('Puntos', this.language) + ": " + this.puntuacion);
 
       if (this.ladrillos.countActive() === 0) {
         this.velocidadInicial *= 1.1;
-        this.scene.restart({ puntuacion: this.puntuacion, velocidadInicial: this.velocidadInicial });
+        // Reiniciar la escena Game y pasar los datos necesarios
+        this.scene.restart({ puntuacion: this.puntuacion, velocidadInicial: this.velocidadInicial, language: this.language });
       }
     }
   }
 
   crearPelota(x, y) {
-
     const emitter = this.add.particles(0, 0, "Rojo", {
-      speed: 100,
+      speed: 10,
       scale: { start: 1, end: 0 },
       blendMode: "ADD",
     });
-  
 
     var nuevaPelota = this.pelotas.create(x, y, "Marcos");
-    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);//carga la velocidad predeterminada
+    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial); // carga la velocidad predeterminada
     nuevaPelota.setBounce(1, 1);
     nuevaPelota.setCollideWorldBounds(true);
 
     emitter.startFollow(nuevaPelota);
   }
+
   crearBomba(x, y) {
     var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);
-    nuevaBomba.setVelocity(0, 200); //velocidad de la bomba
+    nuevaBomba.setVelocity(0, 200); // velocidad de la bomba
   }
 
   destruirPelota(pelota, suelo) {
@@ -120,13 +116,13 @@ export default class Game extends Phaser.Scene {
 
   colisionPalaBomba(pala, bomba) {
     // Cambiar a la escena de Game Over y mantiene la puntuación final
-    this.scene.start("GameOver", { puntuacion: this.puntuacion });
+    this.scene.start("GameOver", { puntuacion: this.puntuacion, language: this.language });
   }
 
   update() {
     // Verifica si no hay pelotas en la pantalla
     if (this.pelotas.countActive() === 0) {
-      this.scene.start("GameOver", { puntuacion: this.puntuacion });
+      this.scene.start("GameOver", { puntuacion: this.puntuacion, language: this.language });
     }
   }
 }

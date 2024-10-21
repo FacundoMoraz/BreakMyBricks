@@ -1,26 +1,30 @@
-import { getTranslations, getPhrase } from "../services/translations"; // Importar las funciones
+import Phaser from "phaser";
+import { getPhrase } from "../services/translations";
 
 export default class MenuL extends Phaser.Scene {
   constructor() {
     super("MenuL");
   }
 
-  create() {
-    this.add.image(400, 300, "Fondo_Lenguaje");
+  preload() {
+    // Carga tus imágenes
+    this.load.image("Fondo_Lenguaje", "path/to/Fondo_Lenguaje.png");
+    this.load.image("Bandera_ARG", "path/to/Bandera_ARG.png");
+    this.load.image("Bandera_EEUU", "path/to/Bandera_EEUU.png");
+  }
 
-    const banderaARG = this.add.image(300, 300, "Bandera_ARG").setInteractive();
-    const banderaEEUU = this.add.image(500, 300, "Bandera_EEUU").setInteractive();
+  create() {
+    this.add.image(400, 300, "Fondo_Lenguaje").setScale(1.5);
+
+    const banderaARG = this.add.image(300, 300, "Bandera_ARG").setInteractive().setScale(0.17);
+    const banderaEEUU = this.add.image(500, 300, "Bandera_EEUU").setInteractive().setScale(0.16);
 
     banderaARG.on("pointerdown", () => {
-      getTranslations("ES_AR", () => {
-        this.scene.start("MainMenu"); // Después de cargar las traducciones, ir al MainMenu
-      });
+      this.scene.start("MainMenu", { language: "ES_AR" });
     });
 
     banderaEEUU.on("pointerdown", () => {
-      getTranslations("EN_US", () => {
-        this.scene.start("MainMenu");
-      });
+      this.scene.start("MainMenu", { language: "EN_US" });
     });
   }
 }

@@ -1,7 +1,7 @@
-import { DE_DE, EN_US, ES_AR, PT_BR } from '../enums/languages';
+import { DE_DE, EN_US, ES_AR, PT_BR } from './enums/languages';
 
-const PROJECT_ID = 'cm22i5ee40001fah01iuyeqdp';
-let translations = null;
+const PROJECT_ID = 'cm2ciweoq0002zxv8gf7lqhic';
+let translations = ES_US;
 let language = ES_AR;
 
 export async function getTranslations(lang = language, callback) {
@@ -13,7 +13,7 @@ export async function getTranslations(lang = language, callback) {
     return;
   }
   
-  return await fetch(`https://traducila.vercel.app/api/translations/${cm2ciweoq0002zxv8gf7lqhic}/${en-US}`)
+  return await fetch(`https://traducila.vercel.app/api/translations/${PROJECT_ID}/${language}`)
     .then(response => response.json())
     .then(data => {
       localStorage.setItem('translations', JSON.stringify(data));

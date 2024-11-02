@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { getPhrase } from "../services/translations"; // Asegúrate de importar la función
+import { getPhrase } from "../services/translations";
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -24,17 +24,8 @@ export default class Game extends Phaser.Scene {
     this.pala = this.physics.add.image(400, 550, "pala").setImmovable().setScale(0.3);
     this.pala.body.allowGravity = false;
 
-    this.pelotas = this.physics.add.group({
-      key: "Marcos",
-      repeat: 0,
-      setXY: { x: 400, y: 280 }
-    });
-
-    this.pelotas.children.iterate((pelota) => {
-      pelota.setCollideWorldBounds(true);
-      pelota.setBounce(1, 1);
-      pelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
-    });
+    this.pelotas = this.physics.add.group();
+    this.crearPelota(400, 280); // Crear la pelota inicial con partículas
 
     this.suelo = this.physics.add.staticGroup();
     this.suelo.create(300, 610, 'suelo').setScale(2).refreshBody(); // Ajusta la posición y escala según sea necesario
@@ -44,7 +35,7 @@ export default class Game extends Phaser.Scene {
 
     this.physics.add.collider(this.pelotas, this.pala, this.rebotarPelota, null, this);
     this.physics.add.collider(this.pelotas, this.ladrillos, this.destruirLadrillo, null, this);
-    this.physics.add.collider(this.pelotas, this.suelo, this.destruirPelota, null, this); // Añadir la colisión con el suelo
+    this.physics.add.collider(this.pelotas, this.suelo, this.destruirPelota, null, this);
 
     this.input.on("pointermove", (pointer) => {
       this.pala.x = pointer.x;
@@ -54,20 +45,19 @@ export default class Game extends Phaser.Scene {
     this.bombas = this.physics.add.group();
     this.physics.add.overlap(this.pala, this.bombas, this.colisionPalaBomba, null, this);
 
-    // Crear el texto de puntuación
+    // Crear el texto de puntuación en pantalla
     this.puntuacionTexto = this.add.text(16, 16, getPhrase('Puntos', this.language) + ": " + this.puntuacion, { fontSize: "32px", fill: "#fff" });
   }
 
   crearLadrillos() {
     this.filas = 4;
     this.columnas = 8;
-    this.ladrillo = null;
-    for (this.y = 0; this.y < this.filas; this.y++) {
-      for (this.x = 0; this.x < this.columnas; this.x++) {
-        this.ladrillo = this.ladrillos.create(80 + this.x * 80, 100 + this.y * 40, "obstaculo").setScale(1).refreshBody();
-        this.ladrillo.vida = Phaser.Math.Between(1, 3); 
-        this.ladrillo.creaPelota = Phaser.Math.Between(0, 1) === 1; 
-        this.ladrillo.creaBomba = Phaser.Math.Between(0, 1) === 1; // como los anteriores aleatoriza si sale bomba o otra pelota al destruir un ladrillo
+    for (let y = 0; y < this.filas; y++) {
+      for (let x = 0; x < this.columnas; x++) {
+        const ladrillo = this.ladrillos.create(80 + x * 80, 100 + y * 40, "obstaculo").setScale(1).refreshBody();
+        ladrillo.vida = Phaser.Math.Between(1, 3); 
+        ladrillo.creaPelota = Phaser.Math.Between(0, 1) === 1; 
+        ladrillo.creaBomba = Phaser.Math.Between(0, 1) === 1;
       }
     }
   }
@@ -79,12 +69,17 @@ export default class Game extends Phaser.Scene {
       ladrillo.disableBody(true, true);
       this.puntuacion += 10;
 
-      // Actualiza el texto de puntuación
       this.puntuacionTexto.setText(getPhrase('Puntos', this.language) + ": " + this.puntuacion);
+
+      const probabilidad = Phaser.Math.Between(0, 6);
+      if (probabilidad === 5 && ladrillo.creaPelota) {
+        this.crearPelota(ladrillo.x, ladrillo.y);
+      } else if (probabilidad <= 4 && ladrillo.creaBomba) {
+        this.crearBomba(ladrillo.x, ladrillo.y);
+      }
 
       if (this.ladrillos.countActive() === 0) {
         this.velocidadInicial *= 1.1;
-        // Reiniciar la escena Game y pasar los datos necesarios
         this.scene.restart({ puntuacion: this.puntuacion, velocidadInicial: this.velocidadInicial, language: this.language });
       }
     }
@@ -92,35 +87,40 @@ export default class Game extends Phaser.Scene {
 
   crearPelota(x, y) {
     const emitter = this.add.particles(0, 0, "Rojo", {
-      speed: 10,
-      scale: { start: 1, end: 0 },
+      speed: 6,
+      scale: { start: 0.5, end: 0 },
+      lifespan: 600,
       blendMode: "ADD",
     });
 
-    var nuevaPelota = this.pelotas.create(x, y, "Marcos");
-    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial); // carga la velocidad predeterminada
+    const nuevaPelota = this.pelotas.create(x, y, "Marcos");
+    nuevaPelota.setVelocity(this.velocidadInicial, this.velocidadInicial);
     nuevaPelota.setBounce(1, 1);
     nuevaPelota.setCollideWorldBounds(true);
 
     emitter.startFollow(nuevaPelota);
+    
+    // Destruir el emisor junto con la pelota
+    nuevaPelota.emitter = emitter;
   }
 
   crearBomba(x, y) {
-    var nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.5);
-    nuevaBomba.setVelocity(0, 200); // velocidad de la bomba
+    const nuevaBomba = this.bombas.create(x, y, "Bombi").setScale(0.9);
+    nuevaBomba.setVelocity(0, 380);
   }
 
   destruirPelota(pelota, suelo) {
+    if (pelota.emitter) {
+      pelota.emitter.stop(); // Detiene las partículas cuando la pelota es destruida
+    }
     pelota.destroy();
   }
 
   colisionPalaBomba(pala, bomba) {
-    // Cambiar a la escena de Game Over y mantiene la puntuación final
     this.scene.start("GameOver", { puntuacion: this.puntuacion, language: this.language });
   }
 
   update() {
-    // Verifica si no hay pelotas en la pantalla
     if (this.pelotas.countActive() === 0) {
       this.scene.start("GameOver", { puntuacion: this.puntuacion, language: this.language });
     }
